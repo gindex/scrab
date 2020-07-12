@@ -1,0 +1,14 @@
+#!/usr/bin/env python3
+import click
+
+from scrab.scraper import scrape
+
+@click.command()
+@click.argument('url', nargs=1)
+def scrab(url):
+    content = scrape(url)
+    print(content)
+
+
+if __name__ == '__main__':
+    scrab()
