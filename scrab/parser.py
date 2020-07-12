@@ -15,9 +15,13 @@ class Node:
     tag: str
 
     @cached_property
-    def word_cont(self) -> int:
+    def token_cont(self) -> int:
+        return len(self.tokens)
+
+    @cached_property
+    def tokens(self) -> List[str]:
         words = self.content
-        return 0 if len(words) == 0 else len(words.split(' '))
+        return [] if len(words) == 0 else words.split(' ')
 
     @cached_property
     def content(self) -> str:
@@ -29,6 +33,7 @@ class Node:
 
         return text + tail
 
+    @cached_property
     def formatted_content(self) -> str:
         h_tags = {'h1', 'h2', 'h3', 'h4', 'h5', 'h6'}
         if self.tag in h_tags:
@@ -50,7 +55,7 @@ class NodeSequence:
 
     @cached_property
     def word_count(self) -> int:
-        return reduce(lambda a, b: a + b, [node.word_cont for node in self.nodes], 0)
+        return reduce(lambda a, b: a + b, [node.token_cont for node in self.nodes], 0)
 
     @cached_property
     def entry_time(self) -> int:
@@ -64,8 +69,13 @@ class NodeSequence:
     def to_text(self, separator: str = "") -> str:
         return separator.join(node.content for node in self.nodes)
 
+    @cached_property
     def to_formatted_text(self, separator: str = "") -> str:
-        return separator.join(node.formatted_content() for node in self.nodes)
+        return separator.join(node.formatted_content for node in self.nodes)
+
+    @cached_property
+    def tokens(self) -> List[str]:
+        return [node_token for node in self.nodes for node_token in node.tokens]
 
 
 class NodeState(IntEnum):
@@ -113,7 +123,7 @@ def parse(html_page: str) -> List[NodeSequence]:
         else:
             current.state = NodeState.discovered
             node = Node(current.text or '', current.tail or '', time, current.tag)
-            if node.word_cont > 0:
+            if node.token_cont > 0:
                 text_nodes.append(node)
 
             if len(current) > 0:
@@ -178,6 +188,7 @@ def clean(seq: List[NodeSequence]) -> List[NodeSequence]:
         3. tag_variation: Does given consecutive nodes have the same tag, e.g. <p>?
         4. word_count: Number of words contained in all nodes
         5. neighborhood: Given NodeSequences within a window, how different is the depth difference in the DOM?
+        6. word ratio: Typical sentences usually have word containing alphanumeric chars
         """
 
         # Degrees of belief/disbelief
@@ -280,17 +291,41 @@ def clean(seq: List[NodeSequence]) -> List[NodeSequence]:
 
         neighborhood_belief, neighborhood_disbelief = neighborhood(context, current)
 
+        def word_ratio(current_node: NodeSequence) -> Tuple[float, float]:
+            belief = zero
+            disbelief = zero
+
+            tokens = current_node.tokens
+
+            if len(tokens) > 10:
+                ratios = [int(token.isalpha()) for token in tokens]
+                word_ratio = sum(ratios) / len(tokens)
+                if word_ratio > 0.85:
+                    belief = high
+                elif word_ratio < 0.5:
+                    disbelief = low
+                elif word_ratio < 0.2:
+                    disbelief = high
+                elif word_ratio < 0.1:
+                    disbelief = very_high
+
+            return belief, disbelief
+
+        word_ratio_belief, word_ratio_disbelief = word_ratio(current_node)
+
         beliefs = [number_nodes_belief,
                    alowlist_belief,
                    tag_variation_belief,
                    number_words_belief,
-                   neighborhood_belief]
+                   neighborhood_belief,
+                   word_ratio_belief]
 
         disbeliefs = [number_nodes_disbelief,
                       blocklist_disbelief,
                       tag_variation_disbelief,
                       number_words_disbelief,
-                      neighborhood_disbelief]
+                      neighborhood_disbelief,
+                      word_ratio_disbelief]
 
         certainty = sum(beliefs) - sum(disbeliefs)
 
