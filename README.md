@@ -1,6 +1,6 @@
 # scrab - Fuzzy content scraper
 
-![Python package](https://github.com/gindex/scrab/workflows/Python%20package/badge.svg?branch=master)
+[![Python package](https://github.com/gindex/scrab/workflows/Python%20package/badge.svg?branch=master)](https://github.com/gindex/scrab/actions)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/scrab)
 [![GitHub Release](https://img.shields.io/github/v/release/gindex/scrab.svg)](https://github.com/gindex/scrab/releases) 
 [![GitHub Release](https://img.shields.io/pypi/v/scrab.svg)](https://pypi.org/project/scrab) 
