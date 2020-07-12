@@ -8,7 +8,7 @@ setup(
     description='Fast and easy to use scraper for the content-centered web pages, e.g. blog posts, news, etc.',
     long_description=long_description,
     long_description_content_type='text/markdown',
-    version='0.0.3',
+    version='0.0.4',
     keywords='scrab scraper crawler extractor converter web content html text',
     url='https://github.com/gindex/scrab',
     author='Yevgen Pikus',
