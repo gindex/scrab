@@ -208,7 +208,7 @@ def clean(seq: List[NodeSequence]) -> List[NodeSequence]:
             number_nodes_disbelief = low
 
         allowlist = {'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p'}
-        tag_blocklist = {'script', 'span', 'time', 'button', 'style'}
+        tag_blocklist = {'script', 'time', 'button', 'style'}
 
         tags = {node.tag for node in current_node.nodes}
         alowlist_belief = certain if len(tags & allowlist) > 0 else zero
@@ -231,15 +231,19 @@ def clean(seq: List[NodeSequence]) -> List[NodeSequence]:
             belief = zero
             disbelief = zero
 
-            word_ratio = current_node.word_count / len(current_node.nodes)
+            word_count = current_node.word_count / len(current_node.nodes)
 
-            if word_ratio > 10:
+            if word_count > 20:
                 belief = certain
-            elif word_ratio > 7:
+            elif word_count > 10:
                 belief = very_high
-            elif word_ratio > 5:
+            elif word_count > 7:
+                belief = high
+            elif word_count > 5:
                 belief = low
-            elif word_ratio < 3:
+            elif word_count <= 1:
+                disbelief = high
+            elif word_count < 3:
                 disbelief = low
 
             return belief, disbelief
@@ -301,13 +305,15 @@ def clean(seq: List[NodeSequence]) -> List[NodeSequence]:
                 ratios = [int(token.isalpha()) for token in tokens]
                 word_ratio = sum(ratios) / len(tokens)
                 if word_ratio > 0.85:
+                    belief = very_high
+                elif word_ratio > 0.8:
                     belief = high
-                elif word_ratio < 0.5:
-                    disbelief = low
-                elif word_ratio < 0.2:
-                    disbelief = high
                 elif word_ratio < 0.1:
                     disbelief = very_high
+                elif word_ratio < 0.2:
+                    disbelief = high
+                elif word_ratio < 0.5:
+                    disbelief = low
 
             return belief, disbelief
 
