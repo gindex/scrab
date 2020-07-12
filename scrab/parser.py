@@ -197,7 +197,7 @@ def clean(seq: List[NodeSequence]) -> List[NodeSequence]:
             number_nodes_disbelief = low
 
         allowlist = {'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p'}
-        tag_blocklist = {'script', 'span', 'time', 'button'}
+        tag_blocklist = {'script', 'span', 'time', 'button', 'style'}
 
         tags = {node.tag for node in current_node.nodes}
         alowlist_belief = certain if len(tags & allowlist) > 0 else zero
