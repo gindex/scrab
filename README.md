@@ -29,6 +29,7 @@ scrab https://blog.post > content.txt
 ``` 
 
 ### ToDo List
+- [ ] Support `<main>` tag 
 - [ ] Add support for lists
 - [ ] Add support for scripts 
 - [ ] Add support for markdown output format
