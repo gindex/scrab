@@ -90,21 +90,11 @@ def parse(html_page: str) -> List[NodeSequence]:
     - Fuzzy clean all non-content nodes
     """
 
-    dfs_stack: Deque[HtmlElement] = deque()
-    time = 0
-
-    def append_children(html_node: HtmlElement) -> None:
-        # append_children modes on the left side, to preserve tag order on pop()
-        reverse = list(html_node)
-        reverse.reverse()
-        dfs_stack.extend(reverse)
-
     def get_content() -> HtmlElement:
         # TODO extract title
         root: HtmlElement = document_fromstring(html_page).body
 
         article = root.findall(".//article")
-
         if article:
             return article
 
@@ -113,6 +103,15 @@ def parse(html_page: str) -> List[NodeSequence]:
             return main
 
         return root
+
+    dfs_stack: Deque[HtmlElement] = deque()
+    time = 0
+
+    def append_children(html_node: HtmlElement) -> None:
+        # append_children modes on the left side, to preserve tag order on pop()
+        reverse = list(html_node)
+        reverse.reverse()
+        dfs_stack.extend(reverse)
 
     append_children(get_content())
 
@@ -149,34 +148,35 @@ def parse(html_page: str) -> List[NodeSequence]:
                 current.exit_time = time
                 current.state = NodeState.processed
 
-    def join_consecutive(nodes: List[NodeSequence]) -> List[NodeSequence]:
-        previous: Optional[NodeSequence] = None
-        result: List[NodeSequence] = []
-
-        for current_node in nodes:
-            if previous is not None:
-                if abs(previous.exit_time - current_node.entry_time) == 1:
-                    previous = NodeSequence(previous.nodes + current_node.nodes)
-                else:
-                    result.append(previous)
-                    previous = current_node
-            else:
-                previous = current_node
-
-        if previous is not None:
-            result.append(previous)
-
-        if len(result) < len(nodes):
-            return join_consecutive(result)
-        else:
-            return result
-
     node_seq = [NodeSequence([node]) for node in text_nodes]
 
     joined_nodes = join_consecutive(node_seq)
     cleaned_nodes = clean(joined_nodes)
 
     return cleaned_nodes
+
+
+def join_consecutive(nodes: List[NodeSequence]) -> List[NodeSequence]:
+    previous: Optional[NodeSequence] = None
+    result: List[NodeSequence] = []
+
+    for current_node in nodes:
+        if previous is not None:
+            if abs(previous.exit_time - current_node.entry_time) == 1:
+                previous = NodeSequence(previous.nodes + current_node.nodes)
+            else:
+                result.append(previous)
+                previous = current_node
+        else:
+            previous = current_node
+
+    if previous is not None:
+        result.append(previous)
+
+    if len(result) < len(nodes):
+        return join_consecutive(result)
+    else:
+        return result
 
 
 def clean(seq: List[NodeSequence]) -> List[NodeSequence]:
