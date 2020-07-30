@@ -99,9 +99,22 @@ def parse(html_page: str) -> List[NodeSequence]:
         reverse.reverse()
         dfs_stack.extend(reverse)
 
-    # TODO extract title
-    root: HtmlElement = document_fromstring(html_page).body
-    append_children(root)
+    def get_content() -> HtmlElement:
+        # TODO extract title
+        root: HtmlElement = document_fromstring(html_page).body
+
+        article = root.findall(".//article")
+
+        if article:
+            return article
+
+        main = root.findall(".//main")
+        if main:
+            return main
+
+        return root
+
+    append_children(get_content())
 
     text_nodes: Deque[Node] = deque()
 

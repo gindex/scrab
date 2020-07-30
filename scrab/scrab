@@ -2,7 +2,7 @@
 import click
 
 from scrab.formatter import to_text
-from scrab.io.web_client import load_page
+from scrab.web.web_client import load_page
 from scrab.parser import parse
 
 

@@ -135,3 +135,53 @@ class TestParser(unittest.TestCase):
         remove_trailing_whitespaces(content)
 
         self.assertEqual(content, expected)
+
+    def test_main_tag(self):
+        html = """
+            <body>
+                <h1>Page title</h1>
+                <div>
+                    <p>This is first ignore sentence.</p>
+                    <p>This is second ignored sentence.</p>
+                </div>
+                <main>
+                    <p>This is first sentence.</p>
+                    <p>This is second sentence.</p>
+                </main>
+            </body>
+        """
+
+        expected = [NodeSequence([
+            Node("This is first sentence.", "", 2, "p"),
+            Node("This is second sentence.", "", 3, "p")
+        ])]
+
+        content = parse(html)
+        remove_trailing_whitespaces(content)
+
+        self.assertEqual(content, expected)
+
+    def test_article_tag(self):
+        html = """
+            <body>
+                <h1>Page title</h1>
+                <div>
+                    <p>This is first ignore sentence.</p>
+                    <p>This is second ignored sentence.</p>
+                </div>
+                <article>
+                    <p>This is first sentence.</p>
+                    <p>This is second sentence.</p>
+                </article>
+            </body>
+        """
+
+        expected = [NodeSequence([
+            Node("This is first sentence.", "", 2, "p"),
+            Node("This is second sentence.", "", 3, "p")
+        ])]
+
+        content = parse(html)
+        remove_trailing_whitespaces(content)
+
+        self.assertEqual(content, expected)
